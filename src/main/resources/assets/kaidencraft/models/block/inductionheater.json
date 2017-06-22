@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "kaidencraft:block/inductionheater",
+    "down": "kaidencraft:block/inductionheater",
+    "up": "kaidencraft:block/inductionheater",
+    "east": "kaidencraft:block/inductionheater",
+    "west": "kaidencraft:block/inductionheater",
+    "north": "kaidencraft:block/inductionheater",
+    "south": "kaidencraft:block/inductionheater"
+  }
+}

@@ -1,0 +1,13 @@
+itemGroup.kaidencraft=KaidenCraft
+item.kaidencraft.wrench.name=ＫａｉｄｅｎＣｏｒｐ™ オムニレンチ ３０００
+tile.kaidencraft.boiler.name=蒸気ボイラー
+tile.kaidencraft.smallturbine.name=小型タービン
+tile.kaidencraft.smalldynamo.name=小型ダイナモ
+
+item.kaidencraft.wrench.info=KaidenCorp™ Omniwrench 3000
+
+tile.kaidencraft.boiler.info=Steam Boiler
+tile.kaidencraft.smallturbine.info=Small Turbine
+tile.kaidencraft.smalldynamo.info=Small Dynamo
+
+kaidencraft.gui.boiler=ボイラー・Boiler

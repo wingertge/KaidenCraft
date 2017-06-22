@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "kaidencraft:block/boiler",
+    "down": "kaidencraft:block/orientationtest_down",
+    "up": "kaidencraft:block/orientationtest_up",
+    "east": "kaidencraft:block/orientationtest_east",
+    "west": "kaidencraft:block/orientationtest_west",
+    "north": "kaidencraft:block/orientationtest_north",
+    "south": "kaidencraft:block/orientationtest_south"
+  }
+}

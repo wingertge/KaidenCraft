@@ -1,0 +1,6 @@
+{
+  "parent": "fruitylib:item/standard_item",
+  "textures": {
+    "layer0": "kaidencraft:item/wrench"
+  }
+}

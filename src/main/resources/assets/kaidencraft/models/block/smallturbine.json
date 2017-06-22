@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "kaidencraft:block/smallturbine",
+    "down": "kaidencraft:block/smallturbine",
+    "up": "kaidencraft:block/smallturbine",
+    "east": "kaidencraft:block/smallturbine",
+    "west": "kaidencraft:block/smallturbine",
+    "north": "kaidencraft:block/smallturbine",
+    "south": "kaidencraft:block/smallturbine"
+  }
+}
