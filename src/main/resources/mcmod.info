@@ -9,7 +9,7 @@
   "updateUrl": "",
   "authorList": ["GenerousGuava"],
   "credits": "Me, me and only me. Also Reika.",
-  "logoFile": "/kaitencraft_logo_minecraft.png",
+  "logoFile": "/kaidencraft_logo_minecraft.png",
   "screenshots": ["FruityLib", "CodeChickenLib"],
   "dependencies": [],
   "useDependencyInformation": true

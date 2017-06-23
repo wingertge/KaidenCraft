@@ -1,6 +1,5 @@
 package org.generousg.kaidencraft
 
-import Holders
 import codechicken.lib.gui.SimpleCreativeTab
 import net.minecraftforge.common.config.Config
 import net.minecraftforge.common.config.Configuration
@@ -10,6 +9,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry
 import org.generousg.fruitylib.FruityLib
 import org.generousg.fruitylib.config.ConfigProcessing
 import org.generousg.fruitylib.config.FeatureHelper
+import org.generousg.kaidencraft.util.Log
 
 @Mod(useMetadata = true, modid = "kaidencraft", acceptedMinecraftVersions = "[1.9,1.12)")
 class KaidenCraft {
@@ -25,6 +25,7 @@ class KaidenCraft {
 
     @Mod.EventHandler
     fun preInit(event: FMLPreInitializationEvent) {
+        Log.setLogger(event.modLog)
         featureHelper.registerBlocksHolder(Holders.Blocks::class.java)
         featureHelper.registerItemsHolder(Holders.Items::class.java)
         featureHelper.preInit(event.suggestedConfigurationFile)

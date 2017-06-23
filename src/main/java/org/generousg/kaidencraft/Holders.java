@@ -1,3 +1,5 @@
+package org.generousg.kaidencraft;
+
 import org.generousg.fruitylib.config.BlockInstances;
 import org.generousg.fruitylib.config.ItemInstances;
 import org.generousg.fruitylib.config.RegisterBlock;
