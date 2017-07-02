@@ -4,17 +4,16 @@ import org.generousg.fruitylib.config.BlockInstances;
 import org.generousg.fruitylib.config.ItemInstances;
 import org.generousg.fruitylib.config.RegisterBlock;
 import org.generousg.fruitylib.config.RegisterItem;
-import org.generousg.kaidencraft.blocks.BlockBoiler;
-import org.generousg.kaidencraft.blocks.BlockInductionHeater;
-import org.generousg.kaidencraft.blocks.BlockSmallDynamo;
-import org.generousg.kaidencraft.blocks.BlockSmallTurbine;
-import org.generousg.kaidencraft.blocks.tileentities.TileEntityBoiler;
+import org.generousg.kaidencraft.blocks.*;
 import org.generousg.kaidencraft.items.ItemWrench;
 
 public class Holders {
     public static class Blocks implements BlockInstances {
-        @RegisterBlock(name = "boiler", creativeTab = "tabKaidenCraft", hasInfo = true, tileEntity = TileEntityBoiler.class)
+        @RegisterBlock(name = "boiler", creativeTab = "tabKaidenCraft", hasInfo = true, tileEntity = BlockBoiler.TileEntityBoiler.class)
         public static BlockBoiler blockBoiler;
+
+        @RegisterBlock(name = "boilertank", creativeTab = "tabKaidenCraft", hasInfo = true, tileEntity = BlockBoilerTank.TileEntityBoilerTank.class)
+        public static BlockBoilerTank blockBoilerTank;
 
         @RegisterBlock(name = "smallturbine", creativeTab = "tabKaidenCraft", hasInfo = true)
         public static BlockSmallTurbine blockSmallTurbine;

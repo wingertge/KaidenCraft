@@ -2,6 +2,7 @@
 itemGroup.kaidencraft=KaidenCraft
 item.kaidencraft.wrench.name=KaidenCorp™ OmniWrench 3000
 tile.kaidencraft.boiler.name=Steam Boiler
+tile.kaidencraft.boilertank.name=Boiler Tank
 tile.kaidencraft.smallturbine.name=Small Turbine
 tile.kaidencraft.smalldynamo.name=Small Dynamo
 tile.kaidencraft.inductionheater.name=Induction Heater
@@ -9,6 +10,7 @@ tile.kaidencraft.inductionheater.name=Induction Heater
 item.kaidencraft.wrench.info=ＫａｉｄｅｎＣｏｒｐ™ オムニレンチ ３０００
 
 tile.kaidencraft.boiler.info=蒸気ボイラー
+tile.kaidencraft.boilertank.info=ボイラーのタンク
 tile.kaidencraft.smallturbine.info=小型タービン
 tile.kaidencraft.smalldynamo.info=小型ダイナモ
 tile.kaidencraft.inductionheater.info=誘導加熱器

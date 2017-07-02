@@ -4,9 +4,9 @@
     "normal": [
       {}
     ],
-    "inventory": [{
-      "transform": "forge:default-block"
-    }],
+    "inventory": [
+      {}
+    ],
     "mb_part": {
       "single": {}, "center_end": {}, "center_corner":{}, "center_edge": {}, "top_end": {}, "top_corner": {}, "top_edge": {}, "top_center": {}, "hidden": {},
       "end": {
@@ -39,10 +39,10 @@
     }
   },
   "defaults": {
+    "model": "kaidencraft:boiler/single.obj",
     "textures": {
       "#initialShadingGroup": "kaidencraft:block/boiler_main"
     },
-    "model": "kaidencraft:boiler/single.obj",
-    "custom": { "flip-v": true }
+    "scale": [0.0625, 0.0625, 0.0625]
   }
 }

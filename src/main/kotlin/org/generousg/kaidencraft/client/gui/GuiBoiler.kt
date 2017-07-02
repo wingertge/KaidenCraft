@@ -16,7 +16,7 @@ class GuiBoiler(container: ContainerBoiler) : GuiMachineBase<ContainerBoiler>(co
         GL11.glTranslatef(xPos + 82f, yPos + 33f, 0f)
         this.drawTexturedModalRect(0, 0, 0, 0, 13, 13)
 
-        if (getContainer().owner.isBurning()) {
+        if (getContainer().owner.isFurnaceBurning()) {
             GL11.glTranslatef(-1f, -1f, 0f)
             val k = getBurnLeftScaled(13)
             this.drawTexturedModalRect(0, 13-k, 13, 13-k, 14, k + 1)
