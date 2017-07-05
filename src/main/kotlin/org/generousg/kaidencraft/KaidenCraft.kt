@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry
 import org.generousg.fruitylib.FruityLib
 import org.generousg.fruitylib.config.ConfigProcessing
 import org.generousg.fruitylib.config.FeatureHelper
+import org.generousg.fruitylib.util.events.Event
 import org.generousg.kaidencraft.KaidenCraft.Companion.MOD_ID
 import org.generousg.kaidencraft.util.Log
 
@@ -22,6 +23,8 @@ class KaidenCraft {
         lateinit var instance: KaidenCraft
         @SidedProxy(clientSide = "org.generousg.kaidencraft.ClientProxy", serverSide = "org.generousg.kaidencraft.ServerProxy")
         lateinit var proxy: CommonProxy
+
+        val preInitEvent = Event<FMLPreInitializationEvent>()
     }
 
     val featureHelper = object: FeatureHelper("kaidencraft", KaidenCraft.Companion::class) {
@@ -30,7 +33,9 @@ class KaidenCraft {
 
     @Mod.EventHandler
     fun preInit(event: FMLPreInitializationEvent) {
+        FruityLib.DEBUG_MODE = true
         Log.setLogger(event.modLog)
+        preInitEvent.fire(event)
         featureHelper.registerBlocksHolder(Holders.Blocks::class.java)
         featureHelper.registerItemsHolder(Holders.Items::class.java)
         featureHelper.preInit(event.suggestedConfigurationFile)

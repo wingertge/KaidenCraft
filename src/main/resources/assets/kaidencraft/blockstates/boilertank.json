@@ -2,27 +2,84 @@
   "forge_marker": 1,
   "variants": {
     "normal": [
-      {}
+      {"model": "kaidencraft:boilertank/single.obj"}
     ],
-    "inventory": [
-      {}
-    ],
+    "inventory": [{
+      "transform": "forge:default-block"
+    }],
     "mb_part": {
-      "single": {}, "center_end": {}, "center_corner":{}, "center_edge": {}, "top_end": {}, "top_corner": {}, "top_edge": {}, "top_center": {}, "hidden": {},
+      "single": {
+        "model": "kaidencraft:boilertank/single.obj"
+      },
       "end": {
-        "model": "kaidencraft:boiler/end.obj"
+        "model": "kaidencraft:boilertank/end_top.obj"
       },
       "line_edge": {
-        "model": "kaidencraft:boiler/line_edge.obj"
+        "model": "kaidencraft:boilertank/line_edge_top.obj"
       },
       "corner": {
-        "model": "kaidencraft:boiler/corner.obj"
+        "model": "kaidencraft:boilertank/corner_top.obj"
       },
       "edge": {
-        "model": "kaidencraft:boiler/edge.obj"
+        "model": "kaidencraft:boilertank/edge_top.obj"
       },
       "center": {
-        "model": "kaidencraft:boiler/center.obj"
+        "model": "kaidencraft:boilertank/center_top.obj"
+      },
+      "bottom_end": {
+        "model": "kaidencraft:boilertank/end.obj"
+      },
+      "bottom_edge": {
+        "model": "kaidencraft:boilertank/edge_center.obj"
+      },
+      "bottom_line_edge": {
+        "model": "kaidencraft:boilertank/line_edge_center.obj"
+      },
+      "bottom_corner": {
+        "model": "kaidencraft:boilertank/corner_center.obj"
+      },
+      "bottom_center": {
+        "model": "kaidencraft:blank.obj"
+      },
+      "bottom_pillar": {
+        "model": "kaidencraft:boilertank/pillar_center.obj"
+      },
+      "center_end": {
+        "model": "kaidencraft:boilertank/end_center.obj"
+      },
+      "center_corner": {
+        "model": "kaidencraft:boilertank/corner_center.obj"
+      },
+      "center_edge": {
+        "model": "kaidencraft:boilertank/edge_center.obj"
+      },
+      "center_line_edge": {
+        "model": "kaidencraft:boilertank/line_edge_center.obj"
+      },
+      "center_pillar": {
+        "model": "kaidencraft:boilertank/pillar_center.obj"
+      },
+      "top_end": {
+        "model": "kaidencraft:boilertank/end_top.obj"
+      },
+      "top_corner": {
+        "model": "kaidencraft:boilertank/corner_top.obj"
+      },
+      "top_edge": {
+        "model": "kaidencraft:boilertank/edge_top.obj"
+      },
+      "top_line_edge": {
+        "model": "kaidencraft:boilertank/line_edge_top.obj"
+      },
+      "top_pillar": {
+        "model": "kaidencraft:boilertank/pillar_bottom.obj",
+        "x": 180
+      },
+      "top_center": {
+        "model": "kaidencraft:boilertank/center_top.obj"
+      },
+      "hidden": {
+        "model": "kaidencraft:blank.obj"
       }
     },
     "facing": {
@@ -39,10 +96,10 @@
     }
   },
   "defaults": {
-    "model": "kaidencraft:boiler/single.obj",
+    "model": "kaidencraft:boilertank/single.obj",
     "textures": {
       "#initialShadingGroup": "kaidencraft:block/boiler_main"
     },
-    "scale": [0.0625, 0.0625, 0.0625]
+    "custom": { "flip-v": true }
   }
 }

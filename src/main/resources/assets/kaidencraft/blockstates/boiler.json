@@ -8,7 +8,8 @@
       "transform": "forge:default-block"
     }],
     "mb_part": {
-      "single": {}, "center_end": {}, "center_corner":{}, "center_edge": {}, "top_end": {}, "top_corner": {}, "top_edge": {}, "top_center": {}, "hidden": {},
+      "defaults": {},
+      "single": {},
       "end": {
         "model": "kaidencraft:boiler/end.obj"
       },
@@ -42,7 +43,7 @@
     "textures": {
       "#initialShadingGroup": "kaidencraft:block/boiler_main"
     },
-    "model": "kaidencraft:boiler/single.obj",
-    "custom": { "flip-v": true }
+    "custom": { "flip-v": true },
+    "model": "kaidencraft:boiler/single.obj"
   }
 }

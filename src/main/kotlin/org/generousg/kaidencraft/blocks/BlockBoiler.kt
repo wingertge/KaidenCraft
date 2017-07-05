@@ -17,6 +17,7 @@ import org.generousg.fruitylib.inDirection
 import org.generousg.fruitylib.multiblock.EntityMultiblock
 import org.generousg.fruitylib.multiblock.MultiblockPart
 import org.generousg.fruitylib.multiblock.TileEntityMultiblockPart
+import org.generousg.fruitylib.util.bitmap.EnumBitMap
 import org.generousg.kaidencraft.KaidenCraft
 import org.generousg.kaidencraft.blocks.tileentities.EntityBoilerMultiblock
 import kotlin.reflect.KClass
@@ -30,12 +31,13 @@ class BlockBoiler : BlockMultiblockPart(Material.ROCK), ITileEntityProvider {
         val thisTE = world.getTileEntity(pos) as TileEntityMultiblockPart
         if(thisTE.multiblockId.value == 0) return state.withProperty(MB_PART, MultiblockPart.SINGLE).withProperty(FACING, NORTH)
         EnumFacing.values().filter { it != EnumFacing.UP && it != EnumFacing.DOWN }.forEach { neighbors.put(it, world.getBlockInDirection(it, pos).block) }
-        val validSides = neighbors.filter { (key, value) -> value is BlockBoiler && (world.getTileEntity(pos.inDirection(key)) as TileEntityMultiblockPart).multiblockId.value == thisTE.multiblockId.value }.keys
+        val validSidesEnums = neighbors.filter { (key, value) -> value is BlockBoiler && (world.getTileEntity(pos.inDirection(key)) as TileEntityMultiblockPart).multiblockId.value == thisTE.multiblockId.value }.keys
+        val validSides = EnumBitMap(validSidesEnums)
 
-        when(validSides.size) {
+        when(validSidesEnums.size) {
             0 -> return state.withProperty(MB_PART, MultiblockPart.SINGLE)
             1 -> return state.withProperty(MB_PART, MultiblockPart.END)
-                    .withProperty(FACING, validSides.elementAt(0))
+                    .withProperty(FACING, validSidesEnums.elementAt(0))
             2 -> {
                 if(validSides.contains(NORTH)) {
                     if(validSides.contains(SOUTH)) return state.withProperty(MB_PART, MultiblockPart.LINE_EDGE)
@@ -69,7 +71,7 @@ class BlockBoiler : BlockMultiblockPart(Material.ROCK), ITileEntityProvider {
     override val mod: Any = KaidenCraft.instance
 
     class TileEntityBoiler : TileEntityMultiblockPart(BlockBoiler::class, BlockBoilerTank::class) {
-        override fun createEntity(world: World): EntityMultiblock = EntityBoilerMultiblock(world)
+        override fun rebuild(pos: BlockPos): EntityMultiblock? = EntityBoilerMultiblock.rebuild(world, pos)
     }
 
     override fun createNewTileEntity(worldIn: World, meta: Int): TileEntity? {
