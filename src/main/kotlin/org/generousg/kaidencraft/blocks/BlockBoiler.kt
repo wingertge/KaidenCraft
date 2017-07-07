@@ -17,6 +17,7 @@ import org.generousg.fruitylib.inDirection
 import org.generousg.fruitylib.multiblock.EntityMultiblock
 import org.generousg.fruitylib.multiblock.MultiblockPart
 import org.generousg.fruitylib.multiblock.TileEntityMultiblockPart
+import org.generousg.fruitylib.sync.SyncableUUID
 import org.generousg.fruitylib.util.bitmap.EnumBitMap
 import org.generousg.kaidencraft.KaidenCraft
 import org.generousg.kaidencraft.blocks.tileentities.EntityBoilerMultiblock
@@ -29,7 +30,7 @@ class BlockBoiler : BlockMultiblockPart(Material.ROCK), ITileEntityProvider {
     override fun getMultiblockPart(world: IBlockAccess, pos: BlockPos, state: IBlockState): IBlockState {
         val neighbors = hashMapOf<EnumFacing, Block>()
         val thisTE = world.getTileEntity(pos) as TileEntityMultiblockPart
-        if(thisTE.multiblockId.value == 0) return state.withProperty(MB_PART, MultiblockPart.SINGLE).withProperty(FACING, NORTH)
+        if(thisTE.multiblockId.value == SyncableUUID.IDENTITY) return state.withProperty(MB_PART, MultiblockPart.SINGLE).withProperty(FACING, NORTH)
         EnumFacing.values().filter { it != EnumFacing.UP && it != EnumFacing.DOWN }.forEach { neighbors.put(it, world.getBlockInDirection(it, pos).block) }
         val validSidesEnums = neighbors.filter { (key, value) -> value is BlockBoiler && (world.getTileEntity(pos.inDirection(key)) as TileEntityMultiblockPart).multiblockId.value == thisTE.multiblockId.value }.keys
         val validSides = EnumBitMap(validSidesEnums)
@@ -70,7 +71,7 @@ class BlockBoiler : BlockMultiblockPart(Material.ROCK), ITileEntityProvider {
 
     override val mod: Any = KaidenCraft.instance
 
-    class TileEntityBoiler : TileEntityMultiblockPart(BlockBoiler::class, BlockBoilerTank::class) {
+    class TileEntityBoiler : TileEntityMultiblockPart() {
         override fun rebuild(pos: BlockPos): EntityMultiblock? = EntityBoilerMultiblock.rebuild(world, pos)
     }
 

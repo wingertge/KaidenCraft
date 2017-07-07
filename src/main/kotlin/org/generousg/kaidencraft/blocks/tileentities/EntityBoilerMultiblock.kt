@@ -1,41 +1,35 @@
 package org.generousg.kaidencraft.blocks.tileentities
 
+import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.ResourceLocation
+import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
-import net.minecraftforge.fml.common.registry.EntityRegistry
+import net.minecraftforge.common.capabilities.Capability
+import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.items.IItemHandler
 import org.generousg.fruitylib.client.gui.IHasGui
-import org.generousg.fruitylib.emptyItemStack
-import org.generousg.fruitylib.inventory.IInventoryProvider
-import org.generousg.fruitylib.inventory.InventorySerializable
+import org.generousg.fruitylib.inventory.NamedItemHandler
 import org.generousg.fruitylib.isNullOrEmpty
 import org.generousg.fruitylib.join
+import org.generousg.fruitylib.liquids.ProxyTank
 import org.generousg.fruitylib.multiblock.EntityMultiblock
 import org.generousg.fruitylib.multiblock.TileEntityMultiblockPart
 import org.generousg.fruitylib.subtract
 import org.generousg.fruitylib.sync.SyncableCoordList
 import org.generousg.fruitylib.sync.SyncableInt
-import org.generousg.fruitylib.sync.SyncableTank
+import org.generousg.fruitylib.sync.SyncableUUID
 import org.generousg.fruitylib.util.Log
-import org.generousg.kaidencraft.KaidenCraft
 import org.generousg.kaidencraft.blocks.BlockBoiler
 import org.generousg.kaidencraft.blocks.BlockBoilerTank
 import org.generousg.kaidencraft.client.gui.ContainerBoiler
 import org.generousg.kaidencraft.client.gui.GuiBoiler
 
 
-class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui, IInventoryProvider, IItemHandler {
+class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
     companion object {
-        init {
-            KaidenCraft.preInitEvent += { EntityRegistry.registerModEntity(ResourceLocation(KaidenCraft.MOD_ID, "multiblock_boiler"),
-                    EntityBoilerMultiblock::class.java, "multiblock_boiler", 0, KaidenCraft.instance, 32, 20, false) }
-        }
-
         fun rebuild(world: World, pos: BlockPos): EntityBoilerMultiblock? {
             Log.debug("Starting org.generousg.fruitylib.multiblock startRebuild")
 
@@ -48,62 +42,40 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui, I
             val boilerBlocks = arrayListOf<BlockPos>()
             val tankBlocks = arrayListOf<BlockPos>()
 
-            if(world.getBlockState(currentPos.add(0, 1,0)).block is BlockBoilerTank) {
-                boilerBlocks.add(currentPos)
-                tankBlocks.add(currentPos.add(0, 1, 0))
-            } else return null
-
-            while(world.getBlockState(currentPos.add(1, 0, 0)).block is BlockBoiler) {
-                if(boilerBlocks.size >= 32) break
-                if(world.getBlockState(currentPos.add(1, 1, 0)).block is BlockBoilerTank) {
-                    currentPos = currentPos.add(1, 0, 0)
-                    boilerBlocks.add(currentPos)
-                    tankBlocks.add(currentPos.add(0, 1, 0))
-                    var tempPos = currentPos.add(0, 2, 0)
-                    while(world.getBlockState(tempPos).block is BlockBoilerTank) {
-                        if(tempPos.subtract(currentPos).y >= 32) break
-                        tempPos = tempPos.add(0, 1, 0)
-                        tankBlocks.add(tempPos)
-                    }
-                } else break
-            }
-
-            var z = 31
-            var minYSize = 30
-            for(it in boilerBlocks) {
+            var minXSize = 32
+            var minYSize = 31
+            var minZSize = 32
+            var currentX = 0
+            while (world.getBlockState(currentPos.add(currentX, 0, 0)).block is BlockBoiler) {
                 var currentZ = 0
-                var currentY = 0
-                while (world.getBlockState(it.add(0, 0, currentZ + 1)).block is BlockBoiler) {
-                    val teBoiler = world.getTileEntity(it.add(0, 0, currentZ + 1))
-                    if(teBoiler is TileEntityMultiblockPart && teBoiler.multiblockId.value != 0) (world.getEntityByID(teBoiler.multiblockId.value) as? EntityMultiblock)?.destroy()
-                    if(world.getBlockState(it.add(0, 1, currentZ + 1)).block is BlockBoilerTank) {
-                        val teTank = world.getTileEntity(it.add(0, 1, currentZ + 1))
-                        if(teTank is TileEntityMultiblockPart && teTank.multiblockId.value != 0) (world.getEntityByID(teTank.multiblockId.value) as? EntityMultiblock)?.destroy()
-                        while (world.getBlockState(it.add(0, currentY + 2, currentZ + 1)).block is BlockBoilerTank) currentY++
-                        currentZ++
-                    } else break
+                while(world.getBlockState(currentPos.add(currentX, 0, currentZ)).block is BlockBoiler) {
+                    var currentY = 0
+                    while(world.getBlockState(currentPos.add(currentX, currentY + 1, currentZ)).block is BlockBoilerTank)
+                        currentY++
+                    currentZ++
+                    minYSize = Math.min(minYSize, currentY)
                 }
-                z = Math.min(z, currentZ)
-                minYSize = Math.min(minYSize, currentY)
+                minZSize = Math.min(minZSize, currentZ)
+                currentX++
             }
+            minXSize = Math.min(minXSize, currentX)
 
-            val boilerBlocksTemp = arrayListOf<BlockPos>()
-            boilerBlocksTemp.addAll(boilerBlocks)
-            if(z > 0) for (a in 1..z) {
-                for (it in boilerBlocksTemp) {
-                    boilerBlocks.add(it.add(0, 0, a))
-                    tankBlocks.add(it.add(0, 1, a))
-                    if(minYSize > 0) (1..minYSize).mapTo(tankBlocks) { y -> it.add(0, y + 1, z) }
+            if(minXSize > 0 && minYSize > 0 && minZSize > 0) {
+                for(x in 0..minXSize-1) {
+                    for(z in 0..minZSize-1) {
+                        boilerBlocks.add(currentPos.add(x, 0, z))
+                        (1..minYSize).mapTo(tankBlocks) { currentPos.add(x, it, z) }
+                    }
                 }
-            }
+            } else return null
 
             val entity = EntityBoilerMultiblock(world)
             entity.setPosition(currentPos.x.toDouble(), currentPos.y.toDouble(), currentPos.z.toDouble())
             boilerBlocks.join(tankBlocks).forEach {
                 val te = world.getTileEntity(it)
                 if(te is TileEntityMultiblockPart) {
-                    if(te.multiblockId.value != 0) getMultiblockEnt(world, te)?.destroy()
-                    te.multiblockId.value = entity.entityId
+                    te.multiblockEntity?.destroy(it)
+                    te.multiblockId.value = entity.persistentID
                 }
             }
 
@@ -112,115 +84,130 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui, I
             Log.debug("Found multiblock, contains ${boilerBlocks.size} boiler/tank units")
             return entity
         }
+    }
 
-        private fun getMultiblockEnt(world: World, te: TileEntityMultiblockPart): EntityMultiblock? {
-            return (world.getEntityByID(te.multiblockId.value)) as? EntityMultiblock
+    lateinit var boilerBurnTime: SyncableInt
+    lateinit var currentItemBurnTime: SyncableInt
+    lateinit var boilerBlocks: SyncableCoordList
+    lateinit var tankBlocks: SyncableCoordList
+    val waterTank = ProxyTank()
+    val steamTank = ProxyTank()
+
+    override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
+        return if(capability == ITEM_HANDLER_CAPABILITY || capability == FLUID_HANDLER_CAPABILITY) true else super.hasCapability(capability, facing)
+    }
+
+    override fun <T : Any?> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
+        when(capability) {
+            ITEM_HANDLER_CAPABILITY -> return ITEM_HANDLER_CAPABILITY.cast(itemHandler)
+            FLUID_HANDLER_CAPABILITY -> if(facing == EnumFacing.UP) return FLUID_HANDLER_CAPABILITY.cast(steamTank) else return FLUID_HANDLER_CAPABILITY.cast(waterTank)
+            else -> return super.getCapability(capability, facing)
         }
     }
 
-    override fun destroy() {
+    override fun destroy(pos: BlockPos) {
+        if(world.isRemote) return
         boilerBlocks.join(tankBlocks).forEach {
             val te = world.getTileEntity(it)
             if(te is TileEntityMultiblockPart) {
-                te.multiblockId.value = 0
+                te.multiblockId.value = SyncableUUID.IDENTITY
                 te.sync()
             }
         }
         boilerBlocks.clear()
         tankBlocks.clear()
-        world.removeEntity(this)
+        if(!itemHandler.isEmpty()) {
+            itemHandler.stacks.filterNot { it.isNullOrEmpty() }
+                    .map { EntityItem(world, pos.x.toDouble() + 0.5, pos.y.toDouble() + 0.5, pos.z.toDouble() + 0.5, it) }
+                    .forEach { world.spawnEntity(it) }
+            itemHandler.clear()
+        }
+        setDead()
     }
-
-    lateinit var boilerBurnTime: SyncableInt
-    lateinit var currentItemBurnTime: SyncableInt
-    lateinit var waterTank: SyncableTank
-    lateinit var steamTank: SyncableTank
-    lateinit var boilerBlocks: SyncableCoordList
-    lateinit var tankBlocks: SyncableCoordList
 
     override fun onEntityUpdate() {
-        if(isFurnaceBurning())
-            boilerBurnTime.value--
-
         if(!world.isRemote) {
-            if(!isFurnaceBurning() && !inventory.isEmpty) {
-                val item = inventory.getStackInSlot(0)
-                val singleItem = item.copy()
-                singleItem.stackSize = 1
-                val fuelValue = GameRegistry.getFuelValue(singleItem)
-                boilerBurnTime.value = fuelValue
-                currentItemBurnTime.value = fuelValue
-
-                item.stackSize--
-                if(item.isNullOrEmpty()) inventory.setInventorySlotContents(0, item.item.getContainerItem(item))
-                sync()
+            var boilersLeft = boilerBlocks.size
+            while(boilersLeft > 0 && isFurnaceBurning()) {
+                if(boilerBurnTime.value >= boilersLeft){
+                    while (boilersLeft > 0) {
+                        if(waterTank.drain(10, false)?.amount ?: 0 == 10 && steamTank.fill(FluidRegistry.getFluidStack("steam", 20), false) == 20) {
+                            boilerBurnTime.value--
+                            waterTank.drain(10, true)
+                            steamTank.fill(FluidRegistry.getFluidStack("steam", 20), true)
+                            boilersLeft--
+                        } else return
+                    }
+                } else {
+                    for(i in 0..boilersLeft - 1) {
+                        if(waterTank.drain(10, false)?.amount ?: 0 == 10 && steamTank.fill(FluidRegistry.getFluidStack("steam", 20), false) == 20) {
+                            boilerBurnTime.value--
+                            waterTank.drain(10, true)
+                            steamTank.fill(FluidRegistry.getFluidStack("steam", 20), true)
+                            boilersLeft--
+                        } else return
+                    }
+                }
+                tryRefuel()
             }
+            if(!waterTank.isEmpty() && !steamTank.isFull()) tryRefuel()
         }
     }
 
-    override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean): ItemStack {
-        if(stack.isNullOrEmpty() || !inventory.isItemValidForSlot(slot, stack)) return stack
-        val currentStack = inventory.getStackInSlot(slot)
-        if(currentStack.stackSize >= currentStack.maxStackSize) return stack
-        val newStack = stack.copy()
-        newStack.stackSize -= currentStack.maxStackSize - currentStack.stackSize
+    private fun tryRefuel() {
+        if (!isFurnaceBurning() && !itemHandler.isEmpty()) {
+            val item = itemHandler.getStackInSlot(0)
+            val singleItem = item.copy()
+            singleItem.stackSize = 1
+            val fuelValue = GameRegistry.getFuelValue(singleItem)
+            boilerBurnTime.value = fuelValue
+            currentItemBurnTime.value = fuelValue
 
-        if(!simulate) {
-            if(newStack.stackSize == 0) {
-                currentStack.stackSize += stack.stackSize
-                inventory.setInventorySlotContents(slot, currentStack)
-                return emptyItemStack
-            } else {
-                currentStack.stackSize = currentStack.maxStackSize
-                inventory.setInventorySlotContents(slot, currentStack)
-                return newStack
-            }
+            item.stackSize--
+            if (item.isNullOrEmpty()) itemHandler.setStackInSlot(0, item.item.getContainerItem(item))
+            sync()
         }
-        return newStack
-    }
-
-    override fun getStackInSlot(slot: Int): ItemStack = inventory.getStackInSlot(slot)
-    override fun getSlotLimit(slot: Int): Int = inventory.sizeInventory
-    override fun getSlots(): Int = 1
-    override fun extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack {
-        return emptyItemStack
     }
 
     override fun createSyncedFields() {
         syncMap.sentSyncEvent += {
-            if(it.changes.contains(waterTank)) waterTank.capacity = 4000 * tankBlocks.size
-            if(it.changes.contains(steamTank)) steamTank.capacity = 4000 * tankBlocks.size
+            waterTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.waterTank }.filterNotNull())
+            steamTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.steamTank }.filterNotNull())
+        }
+
+        syncMap.receivedSyncEvent += {
+            if(it.changes.contains(tankBlocks)) {
+                waterTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.waterTank }.filterNotNull())
+                steamTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.steamTank }.filterNotNull())
+            }
         }
 
         boilerBurnTime = SyncableInt()
         currentItemBurnTime = SyncableInt()
         boilerBlocks = SyncableCoordList()
         tankBlocks = SyncableCoordList()
-        waterTank = SyncableTank(4000)
-        steamTank = SyncableTank(4000)
     }
 
-    override fun writeToNBT(tag: NBTTagCompound): NBTTagCompound {
-        super.writeToNBT(tag)
-        tag.setTag("inventory", inventory.serializeNBT())
-        return tag
+    override fun writeEntityToNBT(compound: NBTTagCompound) {
+        super.writeEntityToNBT(compound)
+        compound.setTag("itemHandler", itemHandler.serializeNBT())
     }
 
-    override fun readFromNBT(tag: NBTTagCompound) {
-        super.readFromNBT(tag)
-        inventory.deserializeNBT(tag.getCompoundTag("inventory"))
+    override fun readEntityFromNBT(compound: NBTTagCompound) {
+        super.readEntityFromNBT(compound)
+        itemHandler.deserializeNBT(compound.getCompoundTag("itemHandler"))
     }
 
-    override val inventory: InventorySerializable = object: InventorySerializable("boiler", false, 1) {
-        override fun isItemValidForSlot(i: Int, stack: ItemStack): Boolean = GameRegistry.getFuelValue(stack) > 0
+    val itemHandler: NamedItemHandler = object: NamedItemHandler("boiler", 1) {
+        override fun isItemValidForSlot(slot: Int, item: ItemStack): Boolean = GameRegistry.getFuelValue(item) > 0
     }
 
     override fun getServerGui(player: EntityPlayer): Any {
-        return ContainerBoiler(player.inventory, this)
+        return ContainerBoiler(player.inventory, itemHandler, this)
     }
 
     override fun getClientGui(player: EntityPlayer): Any {
-        return GuiBoiler(ContainerBoiler(player.inventory, this))
+        return GuiBoiler(ContainerBoiler(player.inventory, itemHandler, this))
     }
 
     override fun canOpenGui(player: EntityPlayer): Boolean = true

@@ -7,5 +7,5 @@ import org.generousg.kaidencraft.KaidenCraft
 
 class BlockSmallTurbine : FruityBlock(Material.IRON) {
     override val mod: Any
-        get() = KaidenCraft.instance!!
+        get() = KaidenCraft.instance
 }

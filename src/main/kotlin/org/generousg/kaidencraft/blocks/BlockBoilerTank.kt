@@ -11,19 +11,25 @@ import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
+import net.minecraftforge.common.capabilities.Capability
+import net.minecraftforge.fluids.FluidRegistry
 import org.generousg.fruitylib.blocks.BlockMultiblockPart
 import org.generousg.fruitylib.blocks.FruityBlock
 import org.generousg.fruitylib.getBlockInDirection
+import org.generousg.fruitylib.inDirection
 import org.generousg.fruitylib.multiblock.EntityMultiblock
 import org.generousg.fruitylib.multiblock.MultiblockPart
 import org.generousg.fruitylib.multiblock.MultiblockPart.*
 import org.generousg.fruitylib.multiblock.TileEntityMultiblockPart
+import org.generousg.fruitylib.sync.SyncableTank
+import org.generousg.fruitylib.sync.SyncableUUID
 import org.generousg.fruitylib.util.bitmap.EnumBitMap
 import org.generousg.kaidencraft.KaidenCraft
 import org.generousg.kaidencraft.blocks.tileentities.EntityBoilerMultiblock
 import kotlin.reflect.KClass
 
 
+@Suppress("OverridingDeprecatedMember")
 class BlockBoilerTank : BlockMultiblockPart(Material.IRON), ITileEntityProvider {
     companion object {
         private val BOUNDING_BOX = AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
@@ -35,9 +41,9 @@ class BlockBoilerTank : BlockMultiblockPart(Material.IRON), ITileEntityProvider 
     override fun getMultiblockPart(world: IBlockAccess, pos: BlockPos, state: IBlockState): IBlockState {
         val neighbors = hashMapOf<EnumFacing, Block>()
         val thisTE = world.getTileEntity(pos) as TileEntityMultiblockPart
-        if(thisTE.multiblockId.value == 0) return state.withProperty(MB_PART, MultiblockPart.SINGLE).withProperty(FACING, NORTH)
+        if(thisTE.multiblockId.value == SyncableUUID.IDENTITY) return state.withProperty(MB_PART, MultiblockPart.SINGLE).withProperty(FACING, NORTH)
         EnumFacing.values().forEach { neighbors.put(it, world.getBlockInDirection(it, pos).block) }
-        val validSidesEnums = neighbors.filter { (_, value) -> value is BlockBoilerTank /*&& (world.getTileEntity(pos.inDirection(key)) as TileEntityMultiblockPart).multiblockId.value == thisTE.multiblockId.value*/ }.keys
+        val validSidesEnums = neighbors.filter { (key, value) -> value is BlockBoilerTank && (world.getTileEntity(pos.inDirection(key)) as TileEntityMultiblockPart).multiblockId.value == thisTE.multiblockId.value }.keys
         val validSides = EnumBitMap(validSidesEnums)
 
         when(validSidesEnums.size) {
@@ -45,7 +51,7 @@ class BlockBoilerTank : BlockMultiblockPart(Material.IRON), ITileEntityProvider 
             1 -> {
                 if(validSides.contains(UP)) return state.withProperty(MB_PART, BOTTOM_PILLAR).withProperty(FACING, NORTH)
                 else if(validSides.contains(DOWN)) return state.withProperty(MB_PART, TOP_PILLAR).withProperty(FACING, NORTH)
-                else state.withProperty(MB_PART, END).withProperty(FACING, validSidesEnums.elementAt(0))
+                else return state.withProperty(MB_PART, END).withProperty(FACING, validSidesEnums.elementAt(0))
             }
             2 -> {
                 if(validSides.contains(UP)) {
@@ -132,14 +138,31 @@ class BlockBoilerTank : BlockMultiblockPart(Material.IRON), ITileEntityProvider 
         return state
     }
 
-    class TileEntityBoilerTank : TileEntityMultiblockPart(BlockBoiler::class, BlockBoilerTank::class) {
+    class TileEntityBoilerTank : TileEntityMultiblockPart() {
+        lateinit var waterTank: SyncableTank
+        lateinit var steamTank: SyncableTank
+
+        override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean = if(capability == FLUID_HANDLER_CAPABILITY) true else super.hasCapability(capability, facing)
+        override fun <T : Any?> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
+            if(capability == FLUID_HANDLER_CAPABILITY)
+                if(facing == UP) return FLUID_HANDLER_CAPABILITY.cast((multiblockEntity as? EntityBoilerMultiblock)?.steamTank ?: steamTank)
+                else return FLUID_HANDLER_CAPABILITY.cast((multiblockEntity as? EntityBoilerMultiblock)?.waterTank ?: waterTank)
+            return super.getCapability(capability, facing)
+        }
+
         override fun rebuild(pos: BlockPos): EntityMultiblock? = EntityBoilerMultiblock.rebuild(world, pos)
+        override fun createSyncedFields() {
+            super.createSyncedFields()
+            waterTank = SyncableTank(4000, FluidRegistry.getFluid("water"))
+            steamTank = SyncableTank(4000, FluidRegistry.getFluid("steam"))
+        }
     }
 
     override val mod: Any = KaidenCraft.instance
     override fun createNewTileEntity(worldIn: World?, meta: Int) = TileEntityBoilerTank()
     override fun isOpaqueCube(state: IBlockState?): Boolean = false
     override fun isFullCube(state: IBlockState?): Boolean = false
+    @Suppress("DEPRECATION")
     override fun getCollisionBoundingBox(blockState: IBlockState?, worldIn: IBlockAccess?, pos: BlockPos?): AxisAlignedBB? {
         return super.getCollisionBoundingBox(blockState, worldIn, pos)
     }

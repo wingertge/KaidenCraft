@@ -1,8 +1,8 @@
 package org.generousg.kaidencraft.client.gui
 
 import net.minecraft.inventory.IInventory
-import org.generousg.fruitylib.client.gui.ContainerInventoryProvider
-import org.generousg.fruitylib.inventory.IInventoryProvider
+import net.minecraftforge.items.IItemHandler
+import org.generousg.fruitylib.container.ContainerBase
 
 
-open class ContainerMachineBase<out T: IInventoryProvider>(playerInventory: IInventory, owner: T) : ContainerInventoryProvider<T>(playerInventory, owner)
+open class ContainerMachineBase<out T>(playerInventory: IInventory, itemHandler: IItemHandler, owner: T) : ContainerBase<T>(playerInventory, itemHandler, owner)

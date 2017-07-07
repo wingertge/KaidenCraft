@@ -16,3 +16,6 @@ tile.kaidencraft.smalldynamo.info=小型ダイナモ
 tile.kaidencraft.inductionheater.info=誘導加熱器
 
 kaidencraft.gui.boiler=Boiler・ボイラー
+
+fluid.kaidencraft.steam=Steam
+fluid.tile.water=Water
