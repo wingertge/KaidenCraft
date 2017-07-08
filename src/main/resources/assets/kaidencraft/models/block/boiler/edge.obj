@@ -1,6 +1,6 @@
 # This file uses centimeters as units for non-parametric coordinates.
 
-mtllib edge.mtl
+mtllib boiler.mtl
 v 0.000000 0.687500 -0.000000
 v 1.000000 0.687500 0.000000
 v 1.000000 0.625000 0.000000

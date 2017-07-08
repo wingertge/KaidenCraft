@@ -21,9 +21,13 @@ import org.generousg.fruitylib.multiblock.EntityMultiblock
 import org.generousg.fruitylib.multiblock.MultiblockPart
 import org.generousg.fruitylib.multiblock.MultiblockPart.*
 import org.generousg.fruitylib.multiblock.TileEntityMultiblockPart
+import org.generousg.fruitylib.sync.ISyncEventProvider
+import org.generousg.fruitylib.sync.SyncMap
 import org.generousg.fruitylib.sync.SyncableTank
 import org.generousg.fruitylib.sync.SyncableUUID
 import org.generousg.fruitylib.util.bitmap.EnumBitMap
+import org.generousg.fruitylib.util.events.Event
+import org.generousg.kaidencraft.Holders
 import org.generousg.kaidencraft.KaidenCraft
 import org.generousg.kaidencraft.blocks.tileentities.EntityBoilerMultiblock
 import kotlin.reflect.KClass
@@ -138,9 +142,22 @@ class BlockBoilerTank : BlockMultiblockPart(Material.IRON), ITileEntityProvider 
         return state
     }
 
-    class TileEntityBoilerTank : TileEntityMultiblockPart() {
+    class TileEntityBoilerTank : TileEntityMultiblockPart(), ISyncEventProvider {
+        override val outboundSyncEvent = Event<SyncMap.SyncEvent>()
+        override val inboundSyncEvent = Event<SyncMap.SyncEvent>()
         lateinit var waterTank: SyncableTank
         lateinit var steamTank: SyncableTank
+
+        init {
+            syncMap.outboundSyncEvent += { outboundSyncEvent.fire(it) }
+            syncMap.inboundSyncEvent += { inboundSyncEvent.fire(it) }
+        }
+
+        override fun update() {
+            super.update()
+            if(!world.isRemote)
+                sync()
+        }
 
         override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean = if(capability == FLUID_HANDLER_CAPABILITY) true else super.hasCapability(capability, facing)
         override fun <T : Any?> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
@@ -153,8 +170,8 @@ class BlockBoilerTank : BlockMultiblockPart(Material.IRON), ITileEntityProvider 
         override fun rebuild(pos: BlockPos): EntityMultiblock? = EntityBoilerMultiblock.rebuild(world, pos)
         override fun createSyncedFields() {
             super.createSyncedFields()
-            waterTank = SyncableTank(4000, FluidRegistry.getFluid("water"))
-            steamTank = SyncableTank(4000, FluidRegistry.getFluid("steam"))
+            waterTank = object: SyncableTank(Holders.Config.boilerTankWaterCapacity, FluidRegistry.getFluid("water")) { init { canDrain = false } }
+            steamTank = object: SyncableTank(Holders.Config.boilerTankSteamCapacity, FluidRegistry.getFluid("steam")) { init { canFill = false } }
         }
     }
 

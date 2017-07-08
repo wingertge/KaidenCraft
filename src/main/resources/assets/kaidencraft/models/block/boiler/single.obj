@@ -1,6 +1,6 @@
 # This file uses centimeters as units for non-parametric coordinates.
 
-mtllib single.mtl
+mtllib boiler.mtl
 v 0.125000 0.125000 1.000000
 v 0.875000 0.125000 1.000000
 v 0.125000 0.875000 1.000000

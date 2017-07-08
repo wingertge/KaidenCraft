@@ -45,6 +45,22 @@ public final class Holders {
       public static final int MULTIBLOCK_BOILER = 0;
    }
 
+   @SuppressWarnings("unused")
    public static final class Config {
+      @OnlineModifiable
+      @ConfigProperty(category = "boiler", name = "steamPerTick", comment = "The steam per tick produced by each boiler block.")
+      public static int boilerSteamPerTick = 20;
+
+      @OnlineModifiable
+      @ConfigProperty(category = "boiler", name = "waterPerTick", comment = "The water per tick consumed by each boiler block.")
+      public static int boilerWaterPerTick = 10;
+
+      @OnlineModifiable
+      @ConfigProperty(category = "boiler", name = "tankWaterCapacity", comment = "The water capacity for each boiler tank block.")
+      public static int boilerTankWaterCapacity = 2000;
+
+      @OnlineModifiable
+      @ConfigProperty(category = "boiler", name = "tankSteamCapacity", comment = "The steam capacity for each boiler tank block.")
+      public static int boilerTankSteamCapacity = 2000;
    }
 }

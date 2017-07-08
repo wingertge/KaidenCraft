@@ -6,12 +6,12 @@ import org.lwjgl.opengl.GL11
 
 
 class GuiBoiler(container: ContainerBoiler) : GuiMachineBase<ContainerBoiler>(container, 176, 175, "kaidencraft.gui.boiler") {
-    private val waterTank = GuiComponentTankLevel(20, 20, 22, 57, container.owner.waterTank.maxAmount, "water")
-    private val steamTank = GuiComponentTankLevel(134, 20, 22, 57, container.owner.waterTank.maxAmount, "steam")
+    private val waterTank = GuiComponentTankLevel(20, 20, 22, 57, container.owner.waterTank.tankProperties.first().capacity, "water")
+    private val steamTank = GuiComponentTankLevel(134, 20, 22, 57, container.owner.waterTank.tankProperties.first().capacity, "steam")
 
     init {
-        waterTank.fluidStack = container.owner.waterTank.contents
-        steamTank.fluidStack = container.owner.steamTank.contents
+        waterTank.fluidStack = container.owner.waterTank.tankProperties.first().contents
+        steamTank.fluidStack = container.owner.steamTank.tankProperties.first().contents
         container.owner.waterTank.capacityChangedEvent += waterTank.capacityReceiver
         container.owner.waterTank.fluidChangedEvent += waterTank.fluidReceiver
         container.owner.steamTank.capacityChangedEvent += steamTank.capacityReceiver

@@ -18,10 +18,9 @@ import org.generousg.fruitylib.liquids.ProxyTank
 import org.generousg.fruitylib.multiblock.EntityMultiblock
 import org.generousg.fruitylib.multiblock.TileEntityMultiblockPart
 import org.generousg.fruitylib.subtract
-import org.generousg.fruitylib.sync.SyncableCoordList
-import org.generousg.fruitylib.sync.SyncableInt
-import org.generousg.fruitylib.sync.SyncableUUID
+import org.generousg.fruitylib.sync.*
 import org.generousg.fruitylib.util.Log
+import org.generousg.kaidencraft.Holders
 import org.generousg.kaidencraft.blocks.BlockBoiler
 import org.generousg.kaidencraft.blocks.BlockBoilerTank
 import org.generousg.kaidencraft.client.gui.ContainerBoiler
@@ -92,6 +91,12 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
     lateinit var tankBlocks: SyncableCoordList
     val waterTank = ProxyTank()
     val steamTank = ProxyTank()
+    private var firstTick = true
+
+    private val teSyncListener: (SyncMap.SyncEvent) -> Unit = {
+        waterTank.invalidateCache()
+        steamTank.invalidateCache()
+    }
 
     override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
         return if(capability == ITEM_HANDLER_CAPABILITY || capability == FLUID_HANDLER_CAPABILITY) true else super.hasCapability(capability, facing)
@@ -111,6 +116,10 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
             val te = world.getTileEntity(it)
             if(te is TileEntityMultiblockPart) {
                 te.multiblockId.value = SyncableUUID.IDENTITY
+                if(te is ISyncEventProvider) {
+                    te.outboundSyncEvent -= teSyncListener
+                    te.inboundSyncEvent -= teSyncListener
+                }
                 te.sync()
             }
         }
@@ -126,24 +135,35 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
     }
 
     override fun onEntityUpdate() {
+        if(firstTick) {
+            firstTick = false
+            if(!world.isRemote) sync()
+            tankBlocks.map { world.getTileEntity(it) }.filterIsInstance(ISyncEventProvider::class.java).forEach {
+                it.outboundSyncEvent += teSyncListener
+                it.inboundSyncEvent += teSyncListener
+            }
+        }
         if(!world.isRemote) {
             var boilersLeft = boilerBlocks.size
+            val drain = Holders.Config.boilerWaterPerTick
+            val fill = Holders.Config.boilerSteamPerTick
             while(boilersLeft > 0 && isFurnaceBurning()) {
                 if(boilerBurnTime.value >= boilersLeft){
                     while (boilersLeft > 0) {
-                        if(waterTank.drain(10, false)?.amount ?: 0 == 10 && steamTank.fill(FluidRegistry.getFluidStack("steam", 20), false) == 20) {
+                        if(waterTank.drainInternal(drain, false)?.amount ?: 0 == drain &&
+                                steamTank.fillInternal(FluidRegistry.getFluidStack("steam", fill), false) == fill) {
                             boilerBurnTime.value--
-                            waterTank.drain(10, true)
-                            steamTank.fill(FluidRegistry.getFluidStack("steam", 20), true)
+                            waterTank.drainInternal(drain, true)
+                            steamTank.fillInternal(FluidRegistry.getFluidStack("steam", fill), true)
                             boilersLeft--
                         } else return
                     }
                 } else {
                     for(i in 0..boilersLeft - 1) {
-                        if(waterTank.drain(10, false)?.amount ?: 0 == 10 && steamTank.fill(FluidRegistry.getFluidStack("steam", 20), false) == 20) {
+                        if(waterTank.drainInternal(drain, false)?.amount ?: 0 == drain && steamTank.fillInternal(FluidRegistry.getFluidStack("steam", fill), false) == fill) {
                             boilerBurnTime.value--
-                            waterTank.drain(10, true)
-                            steamTank.fill(FluidRegistry.getFluidStack("steam", 20), true)
+                            waterTank.drainInternal(drain, true)
+                            steamTank.fillInternal(FluidRegistry.getFluidStack("steam", fill), true)
                             boilersLeft--
                         } else return
                     }
@@ -151,6 +171,8 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
                 tryRefuel()
             }
             if(!waterTank.isEmpty() && !steamTank.isFull()) tryRefuel()
+
+            sync()
         }
     }
 
@@ -170,12 +192,12 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
     }
 
     override fun createSyncedFields() {
-        syncMap.sentSyncEvent += {
+        syncMap.outboundSyncEvent += {
             waterTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.waterTank }.filterNotNull())
             steamTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.steamTank }.filterNotNull())
         }
 
-        syncMap.receivedSyncEvent += {
+        syncMap.inboundSyncEvent += {
             if(it.changes.contains(tankBlocks)) {
                 waterTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.waterTank }.filterNotNull())
                 steamTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.steamTank }.filterNotNull())
