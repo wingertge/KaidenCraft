@@ -40,7 +40,7 @@ class WailaIntegration private constructor() : IWailaDataProvider {
         if(accessor.tileEntity is BlockBoiler.TileEntityBoiler || accessor.tileEntity is BlockBoilerTank.TileEntityBoilerTank) {
             val entity = (accessor.tileEntity as TileEntityMultiblockPart).multiblockEntity as? EntityBoilerMultiblock
             if(entity != null) {
-                if (entity.isFurnaceBurning()) currenttip.add("Burn time: ${entity.boilerBurnTime.value / entity.boilerBlocks.size / 20}s")
+                if (entity.isFurnaceBurning()) currenttip.add("Burn time: ${entity.boilerBurnTime / entity.boilerBlocks.size / 20}s")
                 else currenttip.add("Not burning")
             }
         }

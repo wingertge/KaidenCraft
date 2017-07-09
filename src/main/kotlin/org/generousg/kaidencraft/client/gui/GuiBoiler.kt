@@ -16,6 +16,9 @@ class GuiBoiler(container: ContainerBoiler) : GuiMachineBase<ContainerBoiler>(co
         container.owner.waterTank.fluidChangedEvent += waterTank.fluidReceiver
         container.owner.steamTank.capacityChangedEvent += steamTank.capacityReceiver
         container.owner.steamTank.fluidChangedEvent += steamTank.fluidReceiver
+
+        root.addComponentWithTT(waterTank, this)
+        root.addComponentWithTT(steamTank, this)
     }
 
     override fun onGuiClosed() {
@@ -30,9 +33,6 @@ class GuiBoiler(container: ContainerBoiler) : GuiMachineBase<ContainerBoiler>(co
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY)
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
         this.mc.textureManager.bindTexture(COMPONENTS)
-
-        root.addComponentWithTT(waterTank, this)
-        root.addComponentWithTT(steamTank, this)
 
         drawFlames()
     }
@@ -51,12 +51,12 @@ class GuiBoiler(container: ContainerBoiler) : GuiMachineBase<ContainerBoiler>(co
     }
 
     private fun getBurnLeftScaled(pixels: Int): Int {
-        var i = container.owner.currentItemBurnTime.value
+        var i = container.owner.currentItemBurnTime
 
         if (i == 0) {
             i = 200
         }
 
-        return container.owner.boilerBurnTime.value * pixels / i
+        return container.owner.boilerBurnTime * pixels / i
     }
 }

@@ -36,6 +36,7 @@ class KaidenCraft {
         const val DEPENDENCIES = "required-after:FruityLib"
 
         @Suppress("unused")
+        @JvmStatic
         val tabKaidenCraft = SimpleCreativeTab("kaidencraft", "minecraft:diamond_axe")
         @Mod.Instance(MOD_ID)
         lateinit var instance: KaidenCraft
@@ -45,7 +46,7 @@ class KaidenCraft {
         val preInitEvent = Event<FMLPreInitializationEvent>()
     }
 
-    val featureHelper = object: FeatureHelper("kaidencraft", KaidenCraft.Companion::class) {
+    val featureHelper = object: FeatureHelper(MOD_ID, KaidenCraft::class) {
         override fun populateConfig(config: Configuration) = ConfigProcessing.processAnnotations(MOD_ID, config, Holders.Config::class.java)
     }
 
@@ -60,7 +61,7 @@ class KaidenCraft {
         featureHelper.registerItemsHolder(Holders.Items::class.java)
         featureHelper.preInit(event.suggestedConfigurationFile)
 
-        NetworkRegistry.INSTANCE.registerGuiHandler(instance, FruityLib.proxy?.wrapHandler(KaidenCraftGuiHandler()))
+        NetworkRegistry.INSTANCE.registerGuiHandler(instance, FruityLib.proxy.wrapHandler(KaidenCraftGuiHandler()))
 
         proxy.preInit(event)
         Integration.addModule(IntegrationUtil.createSimpleModule("kc_waila", {

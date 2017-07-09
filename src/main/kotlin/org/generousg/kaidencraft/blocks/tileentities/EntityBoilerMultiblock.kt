@@ -74,7 +74,7 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
                 val te = world.getTileEntity(it)
                 if(te is TileEntityMultiblockPart) {
                     te.multiblockEntity?.destroy(it)
-                    te.multiblockId.value = entity.persistentID
+                    te.multiblockId = entity.persistentID
                 }
             }
 
@@ -85,10 +85,15 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
         }
     }
 
-    lateinit var boilerBurnTime: SyncableInt
-    lateinit var currentItemBurnTime: SyncableInt
-    lateinit var boilerBlocks: SyncableCoordList
-    lateinit var tankBlocks: SyncableCoordList
+    private lateinit var boilerBurnTimeDelegate: SyncableInt
+    private lateinit var currentItemBurnTimeDelegate: SyncableInt
+    private lateinit var boilerBlocksDelegate: SyncableCoordList
+    private lateinit var tankBlocksDelegate: SyncableCoordList
+
+    var boilerBurnTime by boilerBurnTimeDelegate
+    var currentItemBurnTime by currentItemBurnTimeDelegate
+    var boilerBlocks by boilerBlocksDelegate
+    var tankBlocks by tankBlocksDelegate
     val waterTank = ProxyTank()
     val steamTank = ProxyTank()
     private var firstTick = true
@@ -115,7 +120,7 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
         boilerBlocks.join(tankBlocks).forEach {
             val te = world.getTileEntity(it)
             if(te is TileEntityMultiblockPart) {
-                te.multiblockId.value = SyncableUUID.IDENTITY
+                te.multiblockId = SyncableUUID.IDENTITY
                 if(te is ISyncEventProvider) {
                     te.outboundSyncEvent -= teSyncListener
                     te.inboundSyncEvent -= teSyncListener
@@ -148,11 +153,11 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
             val drain = Holders.Config.boilerWaterPerTick
             val fill = Holders.Config.boilerSteamPerTick
             while(boilersLeft > 0 && isFurnaceBurning()) {
-                if(boilerBurnTime.value >= boilersLeft){
+                if(boilerBurnTime >= boilersLeft){
                     while (boilersLeft > 0) {
                         if(waterTank.drainInternal(drain, false)?.amount ?: 0 == drain &&
                                 steamTank.fillInternal(FluidRegistry.getFluidStack("steam", fill), false) == fill) {
-                            boilerBurnTime.value--
+                            boilerBurnTime--
                             waterTank.drainInternal(drain, true)
                             steamTank.fillInternal(FluidRegistry.getFluidStack("steam", fill), true)
                             boilersLeft--
@@ -161,7 +166,7 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
                 } else {
                     for(i in 0..boilersLeft - 1) {
                         if(waterTank.drainInternal(drain, false)?.amount ?: 0 == drain && steamTank.fillInternal(FluidRegistry.getFluidStack("steam", fill), false) == fill) {
-                            boilerBurnTime.value--
+                            boilerBurnTime--
                             waterTank.drainInternal(drain, true)
                             steamTank.fillInternal(FluidRegistry.getFluidStack("steam", fill), true)
                             boilersLeft--
@@ -182,8 +187,8 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
             val singleItem = item.copy()
             singleItem.stackSize = 1
             val fuelValue = GameRegistry.getFuelValue(singleItem)
-            boilerBurnTime.value = fuelValue
-            currentItemBurnTime.value = fuelValue
+            boilerBurnTime = fuelValue
+            currentItemBurnTime = fuelValue
 
             item.stackSize--
             if (item.isNullOrEmpty()) itemHandler.setStackInSlot(0, item.item.getContainerItem(item))
@@ -198,16 +203,16 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
         }
 
         syncMap.inboundSyncEvent += {
-            if(it.changes.contains(tankBlocks)) {
+            if(it.changes.contains(tankBlocksDelegate)) {
                 waterTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.waterTank }.filterNotNull())
                 steamTank.setMembers(tankBlocks.map { (world.getTileEntity(it) as? BlockBoilerTank.TileEntityBoilerTank)?.steamTank }.filterNotNull())
             }
         }
 
-        boilerBurnTime = SyncableInt()
-        currentItemBurnTime = SyncableInt()
-        boilerBlocks = SyncableCoordList()
-        tankBlocks = SyncableCoordList()
+        boilerBurnTimeDelegate = SyncableInt()
+        currentItemBurnTimeDelegate = SyncableInt()
+        boilerBlocksDelegate = SyncableCoordList()
+        tankBlocksDelegate = SyncableCoordList()
     }
 
     override fun writeEntityToNBT(compound: NBTTagCompound) {
@@ -233,5 +238,5 @@ class EntityBoilerMultiblock(world: World) : EntityMultiblock(world), IHasGui {
     }
 
     override fun canOpenGui(player: EntityPlayer): Boolean = true
-    fun isFurnaceBurning(): Boolean = boilerBurnTime.value > 0
+    fun isFurnaceBurning(): Boolean = boilerBurnTime > 0
 }
