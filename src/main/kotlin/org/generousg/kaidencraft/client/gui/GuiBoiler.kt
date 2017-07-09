@@ -31,8 +31,8 @@ class GuiBoiler(container: ContainerBoiler) : GuiMachineBase<ContainerBoiler>(co
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
         this.mc.textureManager.bindTexture(COMPONENTS)
 
-        root.addComponent(waterTank)
-        root.addComponent(steamTank)
+        root.addComponentWithTT(waterTank, this)
+        root.addComponentWithTT(steamTank, this)
 
         drawFlames()
     }

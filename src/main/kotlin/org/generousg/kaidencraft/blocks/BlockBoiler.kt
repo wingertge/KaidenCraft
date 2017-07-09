@@ -32,7 +32,8 @@ class BlockBoiler : BlockMultiblockPart(Material.ROCK), ITileEntityProvider {
         val thisTE = world.getTileEntity(pos) as TileEntityMultiblockPart
         if(thisTE.multiblockId.value == SyncableUUID.IDENTITY) return state.withProperty(MB_PART, MultiblockPart.SINGLE).withProperty(FACING, NORTH)
         EnumFacing.values().filter { it != EnumFacing.UP && it != EnumFacing.DOWN }.forEach { neighbors.put(it, world.getBlockInDirection(it, pos).block) }
-        val validSidesEnums = neighbors.filter { (key, value) -> value is BlockBoiler && (world.getTileEntity(pos.inDirection(key)) as TileEntityMultiblockPart).multiblockId.value == thisTE.multiblockId.value }.keys
+        val validSidesEnums = neighbors.filter { (key, value) -> value is BlockBoiler &&
+                (world.getTileEntity(pos.inDirection(key)) as TileEntityMultiblockPart).multiblockId.value == thisTE.multiblockId.value }.keys
         val validSides = EnumBitMap(validSidesEnums)
 
         when(validSidesEnums.size) {
